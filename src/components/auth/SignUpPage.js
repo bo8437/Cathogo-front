@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signup } from '../../services/auth';
+import logo from '../assets/logo.png';
 
 const SignUpPage = () => {
     const [formData, setFormData] = useState({
@@ -40,6 +41,13 @@ const SignUpPage = () => {
     return (
         <div className="signup-container">
             <div className="signup-box">
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                        <img 
+                        src={logo}
+                        alt="Company Logo"
+                        style={{ maxWidth: '100px'}}
+                    />
+                </div>
                 <h2>Sign Up</h2>
                 {error && <div className="error-message">{error}</div>}
                 <form onSubmit={handleSubmit} className="signup-form">

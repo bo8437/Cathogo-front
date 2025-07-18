@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getWaitingClients, sendBackToAgent, forwardClient, getTreasuryOfficers } from '../../api/client';
+import ClientDetailsModal from '../treasuryOfficer/ClientDetailsModal';
 import './treasury.css';
+import '../treasuryOfficer/dashboard.css';
 
 const formatPhysicalDepositDate = (dateString) => {
     if (!dateString) return 'No date specified';
@@ -98,28 +100,35 @@ const TreasuryDashboard = () => {
         fetchClients();
     }, []);
 
-    const handleView = (clientId) => {
-        navigate(`/treasury/clients/${clientId}`);
+    const handleViewClient = (client) => {
+        setSelectedClient(client);
+        setShowDetailsModal(true);
     };
 
-    const handleSendBack = async (clientId) => {
-        try {
-            const comment = prompt('Please enter a reason for sending back:');
-            if (!comment) return;
-            
-            await sendBackToAgent(clientId, comment);
-            // Refresh the clients list
-            fetchClients();
-        } catch (error) {
-            setError('Failed to send client back: ' + error.message);
-        }
+    const handleCloseDetailsModal = () => {
+        setShowDetailsModal(false);
+        setSelectedClient(null);
+    };
+
+    const handleSendBack = (clientId) => {
+        setSelectedClient(clientId);
+        setShowSendBackModal(true);
+    };
+
+    const handleForward = (clientId) => {
+        setSelectedClient(clientId);
+        setShowForwardModal(true);
     };
 
     const [selectedClient, setSelectedClient] = useState(null);
     const [showForwardModal, setShowForwardModal] = useState(false);
-    const [selectedOfficer, setSelectedOfficer] = useState(null);
+    const [showSendBackModal, setShowSendBackModal] = useState(false);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [sendBackComment, setSendBackComment] = useState('');
     const [officers, setOfficers] = useState([]);
+    const [selectedOfficer, setSelectedOfficer] = useState('');
     const [forwardComment, setForwardComment] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
 
     const fetchOfficers = async () => {
         try {
@@ -134,11 +143,6 @@ const TreasuryDashboard = () => {
     useEffect(() => {
         fetchOfficers();
     }, []);
-
-    const handleForward = (clientId) => {
-        setSelectedClient(clientId);
-        setShowForwardModal(true);
-    };
 
     const handleForwardConfirm = async () => {
         if (!selectedOfficer) {
@@ -171,10 +175,9 @@ const TreasuryDashboard = () => {
             // Forward the client
             await forwardClient(selectedClient, selectedOfficer._id, forwardComment);
             
-            // Show success message
-            setError('Client forwarded successfully!');
-            
-            // Update UI
+            // Show success message and update UI
+            setSuccessMessage('Client forwarded successfully!');
+            setError('');
             setShowForwardModal(false);
             setSelectedClient(null);
             setSelectedOfficer(null);
@@ -201,20 +204,42 @@ const TreasuryDashboard = () => {
         }
     };
 
+    const handleSendBackConfirm = async () => {
+        if (!sendBackComment || sendBackComment.length < 10) {
+            setError('Please enter at least 10 characters for the reason');
+            return;
+        }
+
+        try {
+            await sendBackToAgent(selectedClient, sendBackComment);
+            // Refresh the clients list
+            fetchClients();
+            // Close the modal and reset state
+            setShowSendBackModal(false);
+            setSendBackComment('');
+            setSuccessMessage('Client sent back successfully!');
+        } catch (error) {
+            setError('Failed to send client back: ' + error.message);
+        }
+    };
+
     if (loading) return <div className="loading">Loading clients...</div>;
 
     if (error) return (
-        <div className="error-container">
-            <div className="error-message">Error: {error}</div>
-            <button 
-                className="retry-button"
-                onClick={() => {
-                    setError('');
-                    fetchClients();
-                }}
-            >
-                Retry
-            </button>
+        <div className="message-container">
+            <div className="error-message">
+                <p>{error}</p>
+                <button onClick={fetchClients}>Retry</button>
+            </div>
+        </div>
+    );
+
+    if (successMessage) return (
+        <div className="message-container">
+            <div className="success-message">
+                <p>{successMessage}</p>
+                <button onClick={() => setSuccessMessage('')}>Dismiss</button>
+            </div>
         </div>
     );
 
@@ -273,8 +298,8 @@ const TreasuryDashboard = () => {
                                 <td>
                                     <div className="action-buttons">
                                         <button 
-                                            className="view-button"
-                                            onClick={() => handleView(client._id)}
+                                            className="btn btn-view" 
+                                            onClick={() => handleViewClient(client)}
                                         >
                                             View
                                         </button>
@@ -356,6 +381,54 @@ const TreasuryDashboard = () => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {showSendBackModal && (
+                <div className="modal-overlay">
+                    <div className="forward-modal">
+                        <h3>Send Back to Agent</h3>
+                        <div className="comment-section">
+                            <label>Reason for sending back:</label>
+                            <textarea
+                                value={sendBackComment}
+                                onChange={(e) => setSendBackComment(e.target.value)}
+                                placeholder="Enter your reason for sending this client back to the agent..."
+                                rows="4"
+                                required
+                            />
+                            <div className="comment-error">
+                                {sendBackComment.length < 10 && sendBackComment.length > 0 && (
+                                    <span>Please enter at least 10 characters</span>
+                                )}
+                            </div>
+                        </div>
+                        <div className="modal-buttons">
+                            <button 
+                                className="cancel-button"
+                                onClick={() => {
+                                    setShowSendBackModal(false);
+                                    setSendBackComment('');
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                className="confirm-button"
+                                onClick={handleSendBackConfirm}
+                                disabled={sendBackComment.length < 10}
+                            >
+                                Send Back
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showDetailsModal && selectedClient && (
+                <ClientDetailsModal 
+                    client={selectedClient} 
+                    onClose={handleCloseDetailsModal}
+                />
             )}
         </div>
     );

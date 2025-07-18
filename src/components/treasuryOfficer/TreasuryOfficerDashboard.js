@@ -23,22 +23,18 @@ const TreasuryOfficerDashboard = () => {
     fetchClients();
   }, []);
 
-
-
   const fetchClients = async () => {
     try {
       console.log('Fetching assigned clients...');
       const response = await treasuryOfficerService.getAssignedClients();
       console.log('Received response:', response);
       
-      // Handle empty response
       if (!response) {
         console.warn('No data received from server');
         setClients([]);
         return;
       }
-
-      // The service returns the array directly
+      
       const clients = Array.isArray(response) ? response : [];
       console.log('Setting clients:', clients);
       setClients(clients);
@@ -84,111 +80,108 @@ const TreasuryOfficerDashboard = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="loading-overlay">
+        <div className="spinner"></div>
+        <p>Loading clients...</p>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="treasury-dashboard">
-        {error ? (
-          <div>Error: {error}</div>
-        ) : (
-          <div>
-            <h2>Assigned Clients</h2>
-            {clients.length === 0 ? (
-              <div>No clients assigned</div>
-            ) : (
-              <div className="clients-list">
-                {clients.map((client) => (
-                  <div key={client._id} className="client-card">
-                    <h3>{client.name}</h3>
-                    <p>Beneficiary: {client.beneficiary}</p>
-                    <p>Amount: {client.amount} {client.currency}</p>
-                    <p>Status: {client.status}</p>
-                    <p>Registration Date: {new Date(client.systemRegistrationDate).toLocaleDateString()}</p>
-                    <div className="client-actions">
-                      <button
-                        onClick={() => handleStatusChange(client._id, 'completed')}
-                        className="complete-btn"
-                      >
-                        Complete
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedClient(client);
-                          setShowForwardModal(true);
-                        }}
-                        className="forward-btn"
-                      >
-                        Forward
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+      <div className="error-container">
+        <div className="error-message">
+          <span className="error-icon">⚠</span>
+          <p>{error}</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="treasury-dashboard">
-      {loading ? (
-        <div className="loading">Loading...</div>
-      ) : error ? (
-        <div className="error">{error}</div>
+      <header className="dashboard-header">
+        <h1>Assigned Clients</h1>
+      </header>
+
+      {clients.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-state-content">
+            <span className="empty-state-icon">📄</span>
+            <h2>No clients assigned</h2>
+            <p>You don't have any assigned clients at the moment.</p>
+          </div>
+        </div>
       ) : (
-        <div>
-          <h2>Assigned Clients</h2>
-          {clients.length === 0 ? (
-            <div className="no-clients">No clients assigned</div>
-          ) : (
-            <div className="clients-list">
-              {clients.map((client) => (
-                <div key={client._id} className="client-card">
-                  <h3>{client.name}</h3>
-                  <div className="client-info">
-                    <p>Beneficiary: <strong>{client.beneficiary}</strong></p>
-                    <p>Amount: <strong>{client.amount} {client.currency}</strong></p>
-                    <p>Status: <span className={`status-badge status-${client.status}`}>
-                      {client.status}
-                    </span></p>
-                    <p>Registration Date: {new Date(client.systemRegistrationDate).toLocaleDateString()}</p>
-                  </div>
-                  <div className="client-actions">
-                    <button
-                      onClick={() => {
-                        setSelectedClient(client);
-                        setShowDetailsModal(true);
-                      }}
-                      className="details-btn"
-                    >
-                      View Details
-                    </button>
-                    <button
-                      onClick={() => handleStatusChange(client._id, 'completed')}
-                      className="complete-btn"
-                    >
-                      Complete
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedClient(client);
-                        setShowForwardModal(true);
-                      }}
-                      className="forward-btn"
-                    >
-                      Forward
-                    </button>
-                  </div>
+        <div className="clients-list">
+          {clients.map((client) => (
+            <div key={client._id} className="client-card">
+              <div className="client-header">
+                <h3>{client.name}</h3>
+                <div className="client-status">
+                  <span className={`status-badge status-${client.status}`}>
+                    {client.status}
+                  </span>
                 </div>
-              ))}
+              </div>
+
+              <div className="client-info">
+              <div className="info-item">
+                  <span className="label">Name:</span>
+                  <span className="value">{client.name}</span>
+                </div>
+                <div className="info-item">
+                  <span className="label">Beneficiary:</span>
+                  <span className="value">{client.beneficiary}</span>
+                </div>
+                <div className="info-item">
+                  <span className="label">Domiciliation:</span>
+                  <span className="value">{client.domiciliation}</span>
+                </div>
+                <div className="info-item">
+                  <span className="label">Amount:</span>
+                  <span className="value">{client.amount} {client.currency}</span>
+                </div>
+                <div className="info-item">
+                  <span className="label">Registration Date:</span>
+                  <span className="value">
+                    {new Date(client.systemRegistrationDate).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+
+              <div className="client-actions">
+                <button
+                  onClick={() => {
+                    setSelectedClient(client);
+                    setShowDetailsModal(true);
+                  }}
+                  className="details-btn"
+                >
+                  View Details
+                </button>
+                <button
+                  onClick={() => handleStatusChange(client._id, 'completed')}
+                  className="complete-btn"
+                >
+                  Complete
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedClient(client);
+                    setShowForwardModal(true);
+                  }}
+                  className="forward-btn"
+                >
+                  Forward
+                </button>
+              </div>
             </div>
-          )}
+          ))}
         </div>
       )}
+
       {showDetailsModal && selectedClient && (
         <ClientDetailsModal
           client={selectedClient}
@@ -198,6 +191,7 @@ const TreasuryOfficerDashboard = () => {
           }}
         />
       )}
+
       {showForwardModal && selectedClient && (
         <ForwardClientModal
           clientId={selectedClient._id}

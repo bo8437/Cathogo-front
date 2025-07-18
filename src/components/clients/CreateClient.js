@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createClient } from '../../api/client';
 
+
+
 const CreateClient = () => {
     const [formData, setFormData] = useState({
         name: '',
@@ -23,6 +25,7 @@ const CreateClient = () => {
         });
     };
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -39,7 +42,9 @@ const CreateClient = () => {
 
         try {
             await createClient(formData);
-            navigate('/clients');
+            setSuccess('Client created successfully!');
+            // Navigate after a short delay to show the success message
+            setTimeout(() => navigate('/dashboard'), 2000);
         } catch (err) {
             setError(err.message || 'Failed to create client');
         }
@@ -49,6 +54,7 @@ const CreateClient = () => {
         <div className="client-form-container">
             <h2>Create New Client</h2>
             {error && <div className="error-message">{error}</div>}
+            {success && <div className="success-message">{success}</div>}
             <form onSubmit={handleSubmit} className="client-form">
                 <div className="form-group">
                     <label htmlFor="name">Client Name</label>

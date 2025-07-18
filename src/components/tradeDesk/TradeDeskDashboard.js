@@ -33,8 +33,7 @@ const TradeDeskDashboard = () => {
         setClients([]);
         return;
       }
-
-      // The service returns the array directly
+      
       const clients = Array.isArray(response) ? response : [];
       console.log('Setting clients:', clients);
       setClients(clients);
@@ -67,7 +66,6 @@ const TradeDeskDashboard = () => {
         config: error?.details?.config,
         fullUrl: error?.details?.fullUrl
       });
-      
       if (error?.details?.status === 404) {
         setError('Could not find the Trade Desk API endpoint. Please check if the backend is running and accessible.');
       } else if (error?.details?.status === 401) {
@@ -94,7 +92,6 @@ const TradeDeskDashboard = () => {
     if (!window.confirm('Are you sure you want to delete this client?')) {
       return;
     }
-
     try {
       await tradeDeskService.deleteClient(clientId);
       toast.success('Client deleted successfully');
@@ -127,30 +124,59 @@ const TradeDeskDashboard = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="loading-overlay">
+        <div className="spinner"></div>
+        <p>Loading clients...</p>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="trade-desk-dashboard">
-        <h2>Trade Desk Dashboard</h2>
-        <div className="error-message">{error}</div>
+      <div className="error-container">
+        <div className="error-message">
+          <span className="error-icon">⚠</span>
+          <p>{error}</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="trade-desk-dashboard">
-      <h2>Trade Desk Dashboard</h2>
-      
+      <header className="dashboard-header">
+        <h1>Trade Desk Dashboard</h1>
+      </header>
+
       {clients.length > 0 ? (
         <div className="clients-list">
           {clients.map((client) => (
             <div key={client._id} className="client-card">
-              <h3>{client.name}</h3>
-              <p>Status: {client.status}</p>
-              <p>Created By: {client.createdBy?.name} ({client.createdBy?.role})</p>
-              <p>Last Modified By: {client.lastModifiedBy?.name} ({client.lastModifiedBy?.role})</p>
+              <div className="client-header">
+                <h3>{client.name}</h3>
+                <div className="client-status">
+                  <span className={`status-badge status-${client.status}`}>
+                    {client.status}
+                  </span>
+                </div>
+              </div>
+
+              <div className="client-info">
+                <div className="info-item">
+                  <span className="label">Status:</span>
+                  <span className="value">{client.status}</span>
+                </div>
+                <div className="info-item">
+                  <span className="label">Created By:</span>
+                  <span className="value">{client.createdBy?.name} ({client.createdBy?.role})</span>
+                </div>
+                <div className="info-item">
+                  <span className="label">Last Modified By:</span>
+                  <span className="value">{client.lastModifiedBy?.name} ({client.lastModifiedBy?.role})</span>
+                </div>
+              </div>
+
               <div className="client-actions">
                 <button
                   onClick={() => {
@@ -193,9 +219,12 @@ const TradeDeskDashboard = () => {
           ))}
         </div>
       ) : (
-        <div className="no-clients">
-          <h3>No clients assigned</h3>
-          <p>Waiting for clients to be forwarded from Treasury Officers</p>
+        <div className="empty-state">
+          <div className="empty-state-content">
+            <span className="empty-state-icon">📄</span>
+            <h2>No clients assigned</h2>
+            <p>Waiting for clients to be forwarded from Treasury Officers</p>
+          </div>
         </div>
       )}
 
@@ -204,22 +233,44 @@ const TradeDeskDashboard = () => {
           <div className="modal-content">
             <h3>Client Details</h3>
             <div className="client-details">
-              <p>Name: {selectedClient.name}</p>
-              <p>Beneficiary: {selectedClient.beneficiary}</p>
-              <p>Amount: {selectedClient.amount} {selectedClient.currency}</p>
-              <p>Status: {selectedClient.status}</p>
-              <p>Created: {new Date(selectedClient.systemRegistrationDate).toLocaleDateString()}</p>
-              <h4>Comments:</h4>
-              <div className="comments-list">
-                {selectedClient.comments?.map((comment, index) => (
-                  <div key={index} className="comment-item">
-                    <p>{comment.text}</p>
-                    <small>
-                      Added by {comment.createdBy} on {new Date(comment.createdAt).toLocaleDateString()}
-                    </small>
-                  </div>
-                ))}
+              <div className="details-grid">
+                <div className="details-item">
+                  <label>Name:</label>
+                  <span>{selectedClient.name}</span>
+                </div>
+                <div className="details-item">
+                  <label>Beneficiary:</label>
+                  <span>{selectedClient.beneficiary}</span>
+                </div>
+                <div className="details-item">
+                  <label>Amount:</label>
+                  <span>{selectedClient.amount} {selectedClient.currency}</span>
+                </div>
+                <div className="details-item">
+                  <label>Status:</label>
+                  <span>{selectedClient.status}</span>
+                </div>
+                <div className="details-item">
+                  <label>Created:</label>
+                  <span>{new Date(selectedClient.systemRegistrationDate).toLocaleDateString()}</span>
+                </div>
               </div>
+
+              {selectedClient.comments?.length > 0 && (
+                <div className="comments-section">
+                  <h4>Comments:</h4>
+                  <div className="comments-list">
+                    {selectedClient.comments.map((comment, index) => (
+                      <div key={index} className="comment-item">
+                        <p>{comment.text}</p>
+                        <small>
+                          Added by {comment.createdBy} on {new Date(comment.createdAt).toLocaleDateString()}
+                        </small>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             <button
               onClick={() => {
@@ -255,7 +306,11 @@ const TradeDeskDashboard = () => {
                 />
               </div>
               <div className="modal-actions">
-                <button type="button" onClick={() => setShowNoteModal(false)} className="cancel-btn">
+                <button
+                  type="button"
+                  onClick={() => setShowNoteModal(false)}
+                  className="cancel-btn"
+                >
                   Cancel
                 </button>
                 <button type="submit" className="submit-btn">
