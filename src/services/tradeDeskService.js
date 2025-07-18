@@ -63,8 +63,43 @@ tradeDeskApi.interceptors.response.use(
 );
 
 export const tradeDeskService = {
+  // Get completed clients
+  getCompletedClients: async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      console.log('Trade Desk API Request: GET /api/client/trade-desk/completed');
+      
+      const response = await tradeDeskApi.get('/api/client/trade-desk/completed', {
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+
+      console.log('Trade Desk API Response (Completed Clients):', {
+        status: response.status,
+        data: response.data,
+        headers: response.headers
+      });
+
+      const clients = response.data?.clients || [];
+      return Array.isArray(clients) ? clients : [];
+    } catch (error) {
+      console.error('Trade Desk API Error (Completed Clients):', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
+      throw error.response?.data || error;
+    }
+  },
+
   // Get assigned clients
-  getAssignedClients: async () => {
+  getAssignedClients: async (includeCompleted = true) => {
     try {
       // Check token before making request
       const token = localStorage.getItem('token');
@@ -72,10 +107,11 @@ export const tradeDeskService = {
         throw new Error('No authentication token found');
       }
 
-      console.log('Trade Desk API Request: GET /api/client/trade-desk/assigned');
+      console.log(`Trade Desk API Request: GET /api/client/trade-desk/assigned?includeCompleted=${includeCompleted}`);
       
-      // Use full path with /api prefix
+      // Use full path with /api prefix and includeCompleted parameter
       const response = await tradeDeskApi.get('/api/client/trade-desk/assigned', {
+        params: { includeCompleted },
         headers: {
           'X-Requested-With': 'XMLHttpRequest',
           'Access-Control-Allow-Origin': '*'
@@ -113,29 +149,13 @@ export const tradeDeskService = {
       });
       throw error.response?.data || error;
     }
-    try {
-      console.log('Trade Desk API Request: GET /api/client/trade-desk/assigned');
-      const response = await tradeDeskApi.get('/client/trade-desk/assigned');
-      console.log('Trade Desk API Response:', {
-        status: response.status,
-        data: response.data
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Trade Desk API Error:', {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data
-      });
-      throw error;
-    }
   },
 
   // Change client status
   changeClientStatus: async (clientId, comment) => {
     try {
       console.log('Trade Desk API Request: POST /api/client/trade-desk/change-status');
-      const response = await tradeDeskApi.post('/client/trade-desk/change-status', {
+      const response = await tradeDeskApi.post('/api/client/trade-desk/change-status', {
         clientId,
         status: 'completed',
         comment

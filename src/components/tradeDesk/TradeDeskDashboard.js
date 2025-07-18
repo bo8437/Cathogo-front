@@ -5,12 +5,14 @@ import './styles.css';
 
 const TradeDeskDashboard = () => {
   const [clients, setClients] = useState([]);
+  const [filteredClients, setFilteredClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [note, setNote] = useState('');
+  const [showCompleted, setShowCompleted] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -37,6 +39,7 @@ const TradeDeskDashboard = () => {
       const clients = Array.isArray(response) ? response : [];
       console.log('Setting clients:', clients);
       setClients(clients);
+      setFilteredClients(clients);
     } catch (error) {
       console.error('Error fetching clients:', error);
       if (error?.type === 'timeout') {
@@ -143,22 +146,52 @@ const TradeDeskDashboard = () => {
     );
   }
 
+  // Toggle showing completed clients
+  const toggleShowCompleted = async () => {
+    const newShowCompleted = !showCompleted;
+    setShowCompleted(newShowCompleted);
+    
+    try {
+      if (newShowCompleted) {
+        // Fetch only completed clients when checkbox is checked
+        const completedClients = await tradeDeskService.getCompletedClients();
+        setFilteredClients(completedClients);
+      } else {
+        // Show all assigned clients when unchecked
+        const allClients = await tradeDeskService.getAssignedClients(false);
+        setClients(allClients);
+        setFilteredClients(allClients);
+      }
+    } catch (error) {
+      console.error('Error toggling completed clients:', error);
+      toast.error('Failed to load completed clients');
+    }
+  };
+
   return (
     <div className="trade-desk-dashboard">
       <header className="dashboard-header">
         <h1>Trade Desk Dashboard</h1>
+        <div className="filter-controls">
+          <label className="toggle-completed">
+            <input
+              type="checkbox"
+              checked={showCompleted}
+              onChange={toggleShowCompleted}
+            />
+            Show Completed Clients
+          </label>
+        </div>
       </header>
 
-      {clients.length > 0 ? (
+      {filteredClients.length > 0 ? (
         <div className="clients-list">
-          {clients.map((client) => (
+          {filteredClients.map((client) => (
             <div key={client._id} className="client-card">
               <div className="client-header">
                 <h3>{client.name}</h3>
-                <div className="client-status">
-                  <span className={`status-badge status-${client.status}`}>
-                    {client.status}
-                  </span>
+                <div className={`status-badge status-${client.status}`}>
+                  {client.status.charAt(0).toUpperCase() + client.status.slice(1)}
                 </div>
               </div>
 
@@ -219,12 +252,16 @@ const TradeDeskDashboard = () => {
           ))}
         </div>
       ) : (
-        <div className="empty-state">
-          <div className="empty-state-content">
-            <span className="empty-state-icon">📄</span>
-            <h2>No clients assigned</h2>
-            <p>Waiting for clients to be forwarded from Treasury Officers</p>
-          </div>
+        <div className="no-clients">
+          <p>No {showCompleted ? 'clients' : 'active clients'} found</p>
+          {!showCompleted && clients.length > 0 && (
+            <button 
+              onClick={toggleShowCompleted}
+              className="show-completed-btn"
+            >
+              Show Completed Clients
+            </button>
+          )}
         </div>
       )}
 
@@ -243,12 +280,32 @@ const TradeDeskDashboard = () => {
                   <span>{selectedClient.beneficiary}</span>
                 </div>
                 <div className="details-item">
+                  <label>Domiciliation:</label>
+                  <span>{selectedClient.domiciliation}</span>
+                </div>
+                <div className="details-item">
+                  <label>currency:</label>
+                  <span>{selectedClient.currency}</span>
+                </div>
+                <div className="details-item">
+                  <label>reason:</label>
+                  <span>{selectedClient.reason}</span>
+                </div>
+                <div className="details-item">
+                  <label>physicalDepositDate:</label>
+                  <span>{new Date(selectedClient.physicalDepositDate).toLocaleDateString()}</span>
+                </div>
+                <div className="details-item">
                   <label>Amount:</label>
                   <span>{selectedClient.amount} {selectedClient.currency}</span>
                 </div>
                 <div className="details-item">
-                  <label>Status:</label>
-                  <span>{selectedClient.status}</span>
+                  <label>documents:</label>
+                  <span>{selectedClient.documents}</span>
+                </div>
+                <div className="details-item">
+                  <label>updatedAt:</label>
+                  <span>{new Date(selectedClient.updatedAt).toLocaleDateString()}</span>
                 </div>
                 <div className="details-item">
                   <label>Created:</label>
@@ -258,6 +315,7 @@ const TradeDeskDashboard = () => {
 
               {selectedClient.comments?.length > 0 && (
                 <div className="comments-section">
+
                   <h4>Comments:</h4>
                   <div className="comments-list">
                     {selectedClient.comments.map((comment, index) => (
