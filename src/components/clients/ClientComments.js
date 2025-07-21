@@ -31,9 +31,9 @@ const ClientComments = ({ clientId }) => {
 
     return (
         <div className="comments-section">
-            <h3>Comments from Treasury OPS</h3>
+            <h3>Comments</h3>
             {comments.length === 0 ? (
-                <p className="no-comments">No comments from Treasury OPS yet.</p>
+                <p className="no-comments">No comments yet.</p>
             ) : (
                 <div className="comments-list">
                     {comments.map(comment => (

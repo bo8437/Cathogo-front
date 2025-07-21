@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { treasuryOfficerService } from '../../services/treasuryOfficerService';
 import { toast } from 'react-toastify';
 import ForwardClientModal from './ForwardClientModal';
@@ -161,6 +162,24 @@ const TreasuryOfficerDashboard = () => {
                 >
                   View Details
                 </button>
+
+
+                <Link
+                  to={`/clients/${client._id}`}
+                  className="btn btn-view"
+                  style={{
+                      padding: '8px 16px',
+                      border: '1px solid #ddd',
+                      background: '#fff',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      textDecoration: 'none',
+                      color: '#333'
+                  }}
+                  >
+                  View Details
+              </Link>
+
                 <button
                   onClick={() => handleStatusChange(client._id, 'completed')}
                   className="complete-btn"

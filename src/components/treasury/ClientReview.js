@@ -101,17 +101,17 @@ const ClientReview = () => {
             <div className="documents-section">
                 <h3>Documents</h3>
                 {client.documents?.length > 0 ? (
-                    <div className="documents-container">
-                        {client.documents.map((doc, index) => (
-                            <DocumentPreview
-                                key={index}
-                                document={doc}
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <p className="no-documents">No documents uploaded</p>
-                )}
+                        <div className="documents-container">
+                            {client.documents.map((doc, index) => (
+                                <DocumentPreview
+                                    key={index}
+                                    doc={doc}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <span className="no-documents">No documents uploaded</span>
+                    )}
             </div>
 
             <div className="action-section">

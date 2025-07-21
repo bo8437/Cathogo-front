@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getClient } from '../../api/client';
-import DocumentPreview from './DocumentPreview';
-import ClientComments from './ClientComments';
+import DocumentPreview from '../clients/DocumentPreview';
+import ClientComments from '../clients/ClientComments';
 import './client.css';
-
-const ClientDetails = () => {
+const ClientDetailModalTreasury = ({ client, onClose }) => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [client, setClient] = useState(null);
@@ -35,15 +34,18 @@ const ClientDetails = () => {
         <div className="client-details">
             <div className="client-header">
                 <h2>{client.name}</h2>
+                <button 
+                    className="back-button"
+                    onClick={() => navigate('/dashboard')}
+                >
+                    Back to Clients
+                </button>
             </div>
 
             <div className="client-info">
                 <div className="info-section">
                     <h3>Client Information</h3>
                     <div className="info-grid">
-                        <div>
-                            <strong>name:</strong> {client.name}
-                        </div>
                         <div>
                             <strong>Beneficiary:</strong> {client.beneficiary}
                         </div>
@@ -65,14 +67,9 @@ const ClientDetails = () => {
                         </div>
                         <div>
                             <strong>Status:</strong> 
-                            <span className={`status-badge status ${client.status}`} style={{
-                                    backgroundColor: '#FFD700',
-                                    padding: '4px 8px',
-                                    borderRadius: '4px',
-                                    color: '#000'
-                                    }}>
-                                    {client.status}
-                                    </span>
+                            <span className={`status ${client.status}`}>
+                                {client.status}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -99,4 +96,4 @@ const ClientDetails = () => {
     );
 };
 
-export default ClientDetails;
+export default ClientDetailModalTreasury;

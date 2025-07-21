@@ -1,4 +1,5 @@
 import React from 'react';
+import DocumentPreview from '../clients/DocumentPreview';
 import './dashboard.css';
 
 const ClientDetailsModal = ({ client, onClose }) => {
@@ -43,24 +44,30 @@ const ClientDetailsModal = ({ client, onClose }) => {
 
           <div className="details-section">
             <h4>Documents</h4>
-            <div className="documents-grid">
-              {client.documents.map((doc, index) => (
-                <div key={index} className="document-item">
-                  <div className="document-info">
-                    <p><strong>{doc.fileName}</strong></p>
-                    <p className="document-type">{doc.fileType}</p>
-                  </div>
-                  <a
-                    href={`/uploads/${doc.filePath}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="view-doc-btn"
-                  >
-                    View Document
-                  </a>
+            {console.log('Client documents:', client.documents)}
+            {client.documents?.length > 0 ? (
+                <div className="documents-container">
+                    {client.documents.map((doc, index) => {
+                        console.log(`Document ${index} raw data:`, doc);
+                        
+                        // Handle case where doc is just an ID string
+                        const documentData = typeof doc === 'string' 
+                            ? { filePath: doc, fileName: `Document-${index + 1}` } 
+                            : doc;
+                            
+                        console.log(`Document ${index} processed:`, documentData);
+                        
+                        return (
+                            <DocumentPreview
+                                key={index}
+                                doc={documentData}
+                            />
+                        );
+                    })}
                 </div>
-              ))}
-            </div>
+            ) : (
+                <span className="no-documents">No documents uploaded</span>
+            )}
           </div>
 
           <div className="details-section">

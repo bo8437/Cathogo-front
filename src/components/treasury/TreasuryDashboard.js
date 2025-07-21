@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { getWaitingClients, sendBackToAgent, forwardClient, getTreasuryOfficers } from '../../api/client';
 import ClientDetailsModal from '../treasuryOfficer/ClientDetailsModal';
+import ClientReview from './ClientReview';
 import './treasury.css';
 import '../treasuryOfficer/dashboard.css';
+import '../clients/client.css'
 
 const formatPhysicalDepositDate = (dateString) => {
     if (!dateString) return 'No date specified';
@@ -303,6 +305,21 @@ const TreasuryDashboard = () => {
                                         >
                                             View
                                         </button>
+                                        <Link
+                                                to={`/clients/${client._id}`}
+                                                className="btn btn-view"
+                                                style={{
+                                                    padding: '8px 16px',
+                                                    border: '1px solid #ddd',
+                                                    background: '#fff',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer',
+                                                    textDecoration: 'none',
+                                                    color: '#333'
+                                                }}
+                                                >
+                                                View Details
+                                                </Link>
                                         <button 
                                             className="send-back-button"
                                             onClick={() => handleSendBack(client._id)}

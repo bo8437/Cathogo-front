@@ -41,7 +41,7 @@ function App() {
         <Route
           path="/clients/:id"
           element={
-            <RoleBasedRoute allowedRoles={['Agent OPS', 'Treasury OPS']}>
+            <RoleBasedRoute allowedRoles={['Agent OPS', 'Treasury OPS', 'Treasury Officer']}>
               <ClientDetails />
             </RoleBasedRoute>
           }

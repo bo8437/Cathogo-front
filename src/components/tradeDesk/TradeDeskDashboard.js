@@ -168,6 +168,11 @@ const TradeDeskDashboard = () => {
     }
   };
 
+  const formatStatus = (status) => {
+    if (status === 'waiting') return 'Processing';
+    return status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
   return (
     <div className="trade-desk-dashboard">
       <header className="dashboard-header">
@@ -190,15 +195,23 @@ const TradeDeskDashboard = () => {
             <div key={client._id} className="client-card">
               <div className="client-header">
                 <h3>{client.name}</h3>
-                <div className={`status-badge status-${client.status}`}>
-                  {client.status.charAt(0).toUpperCase() + client.status.slice(1)}
+                <div className={`status-badge status-${client.status}`}
+                style={{ backgroundColor: '#FFD700',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  color: '#000' }}>
+                  {formatStatus(client.status)}
                 </div>
               </div>
 
               <div className="client-info">
                 <div className="info-item">
                   <span className="label">Status:</span>
-                  <span className="value">{client.status}</span>
+                  <span style={{ backgroundColor: '#FFD700',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  color: '#000' }}>{formatStatus(client.status)}</span>
+                       
                 </div>
                 <div className="info-item">
                   <span className="label">Created By:</span>
@@ -220,6 +233,7 @@ const TradeDeskDashboard = () => {
                 >
                   View Details
                 </button>
+                
                 <button
                   onClick={() => {
                     setSelectedClient(client);

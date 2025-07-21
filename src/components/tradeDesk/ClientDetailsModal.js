@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import './styles.css';
+import DocumentPreview from './DocumentPreview';
 
 const ClientDetailsModal = ({ client, onClose }) => {
   if (!client) return null;
@@ -127,27 +128,17 @@ const ClientDetailsModal = ({ client, onClose }) => {
           <div className="details-section">
             <h3>Documents</h3>
             {client.documents?.length > 0 ? (
-              <div className="documents-grid">
-                {client.documents.map((doc, index) => (
-                  <div key={index} className="document-item">
-                    <div className="document-info">
-                      <p><strong>{doc.fileName || 'Document ' + (index + 1)}</strong></p>
-                      {doc.fileType && <p className="document-type">{doc.fileType}</p>}
-                    </div>
-                    <a
-                      href={`/uploads/${doc.filePath}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="view-doc-btn"
-                    >
-                      View Document
-                    </a>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p>No documents available</p>
-            )}
+                        <div className="documents-container">
+                            {client.documents.map((doc, index) => (
+                                <DocumentPreview
+                                    key={index}
+                                    doc={doc}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <span className="no-documents">No documents uploaded</span>
+                    )}
           </div>
 
           {/* Created By & Last Modified By */}

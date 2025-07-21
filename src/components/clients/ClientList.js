@@ -84,7 +84,7 @@ const ClientList = () => {
                       {client.documents.map((doc, index) => (
                         <DocumentPreview
                           key={index}
-                          document={doc}
+                          doc={doc}
                         />
                       ))}
                     </div>
